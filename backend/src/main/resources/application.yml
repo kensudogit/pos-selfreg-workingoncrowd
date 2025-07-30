@@ -1,0 +1,98 @@
+spring:
+  application:
+    name: pos-selfreg-backend
+  
+  profiles:
+    active: dev
+  
+  datasource:
+    url: jdbc:postgresql://localhost:5432/pos_selfreg
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:password}
+    driver-class-name: org.postgresql.Driver
+    
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+        
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    locations: classpath:db/migration
+    
+  security:
+    jwt:
+      secret: ${JWT_SECRET:your-secret-key-here-make-it-long-and-secure}
+      expiration: 86400000 # 24 hours
+      
+  aws:
+    region: ${AWS_REGION:ap-northeast-1}
+    s3:
+      bucket-name: ${S3_BUCKET:pos-selfreg-storage}
+    sqs:
+      queue-url: ${SQS_QUEUE_URL:https://sqs.ap-northeast-1.amazonaws.com/123456789012/pos-selfreg-queue}
+      
+  stripe:
+    secret-key: ${STRIPE_SECRET_KEY:sk_test_...}
+    publishable-key: ${STRIPE_PUBLISHABLE_KEY:pk_test_...}
+    
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+    
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+      
+logging:
+  level:
+    com.posselfreg: DEBUG
+    org.springframework.security: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    
+---
+spring:
+  config:
+    activate:
+      on-profile: dev
+      
+  datasource:
+    url: jdbc:postgresql://localhost:5432/pos_selfreg_dev
+    
+---
+spring:
+  config:
+    activate:
+      on-profile: prod
+      
+  datasource:
+    url: jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    
+  security:
+    jwt:
+      secret: ${JWT_SECRET}
+      
+  aws:
+    region: ${AWS_REGION}
+    s3:
+      bucket-name: ${S3_BUCKET}
+    sqs:
+      queue-url: ${SQS_QUEUE_URL}
+      
+  stripe:
+    secret-key: ${STRIPE_SECRET_KEY}
+    publishable-key: ${STRIPE_PUBLISHABLE_KEY} 
